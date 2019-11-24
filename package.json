@@ -1,13 +1,21 @@
 {
-  "name": "init_tracker",
+  "name": "itsyourturn",
   "version": "1.0.0",
-  "description": "",
+  "description": "Web-based and API driven initiative tracker for D&D and clock-style role playing games.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ScriptBlock/ItsYourTurn.git"
+  },
+  "author": "Zambo",
   "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ScriptBlock/ItsYourTurn/issues"
+  },
+  "homepage": "https://github.com/ScriptBlock/ItsYourTurn#readme",
   "dependencies": {
     "express": "^4.17.1"
   }
