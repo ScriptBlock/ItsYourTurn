@@ -58,9 +58,11 @@ function setInit(charName,segment,roundEnter) {
 	var setValid = true;
 	for(const r of i) {
 		for(const s of r) {
-			for(const t of s) {
-				if(t.charName == charName) {
-					setValid = false;	
+			if(s != null) {
+				for(const t of s) {
+					if(t.charName == charName) {
+						setValid = false;	
+					}
 				}
 			}
 		}
@@ -110,14 +112,20 @@ function actionsRemaining(r,s) {
 
 function findNextSegment(r,s) {
 	if(i[r][s] != null && i[r][s].length > 0) {
+		console.log("Round: " + r + " : Segment " + s + " is not null and has items in it");
 		return {"r": r, "s": s};
+
 	} else {
-		if(i[r] == null) return null;
+		if(i[r] == null) {
+			console.log("Round " + r + " doesn't exist.  Returning null");
+			return null;
+		}
 		if(s == 0) {
+			console.log("Have reached segment zero.  Moving to next round");
 			r++;
 			s = 40;
 		}
-		findNextSegment(r, s-1)
+		return findNextSegment(r, s-1)
 	}
 }
 
@@ -127,8 +135,10 @@ function advanceSegment(r,s) {
 			r++;
 			s = 40;
 		}
+		console.log("finding next segment round: " + r + " : Segment " + (s-1));
 		nextSegment = findNextSegment(r,s-1);
-
+		console.log("advancing segment.  next segment is: " );
+		console.log(nextSegment)
 
 
 	}
@@ -154,14 +164,17 @@ var r = addPlayer("nick", "turzol", "1.2.3.4", "#ccffaa", false);
 r = addPlayer("sue", "susan", "4.3.2.1", "#cfacfa", true);
 r = addPlayer("ken", "rakion", "1.1.1.1", "#bbbbbb", true);
 
-console.log(players);
+//console.log(players);
 
 setInit("turzol", 0, currentRound);
 setInit("rakion", 5, currentRound);
+setInit("susan", 5, currentRound);
 
 printInit();
 console.log("----------------------------");
 
+finishTurn(0,5,0, true);
+finishTurn(0,5,1, true);
 finishTurn(0,0,0, true);
 console.log("----------------------------");
 
