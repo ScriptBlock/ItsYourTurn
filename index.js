@@ -3,7 +3,7 @@ var i = [];
 	[0] = [
 
 		[0] = ]
-			{charName, topic}
+			{playerName,charName, turn, taken, note, createTime, turnTakenTime}
 		]
 
 	]
@@ -54,7 +54,11 @@ function addInitItem(r, s, t) {
 	i[r][s].push(t);
 }
 
-function setInit(charName,segment,roundEnter) {
+function addInitReminder(r,s, player, character, note) {
+	addInitItem(r,s, {"playerName": player, "charName": character, "note": note, "taken": false});
+}
+
+function setInit(playerName, charName,segment,roundEnter) {
 	var setValid = true;
 	for(const r of i) {
 		for(const s of r) {
@@ -70,7 +74,7 @@ function setInit(charName,segment,roundEnter) {
 
 	if(setValid) {
 		//console.log("Add Init Item: " + roundEnter + " : " + segment);
-		addInitItem(roundEnter, segment, {"charName": charName, "turn": 1, "taken":false});
+		addInitItem(roundEnter, segment, {"playerName": playerName, "charName": charName, "turn": 1, "taken":false, "note": "Entered Initiative"});
 	}
 }
 
@@ -120,12 +124,21 @@ function findNextSegment(r,s) {
 			console.log("Round " + r + " doesn't exist.  Returning null");
 			return null;
 		}
-		if(s == 0) {
-			console.log("Have reached segment zero.  Moving to next round");
-			r++;
-			s = 40;
+		if(segments == 0) {
+			if(s == 0) {
+				console.log("Have reached segment zero.  Moving to next round");
+				r++;
+				s = 40;
+			}
+			return findNextSegment(r, s-1)
+		} else {
+			if(s == segments) {
+				console.log("Have reached max segments. Moving to next round");
+				r++;
+				s = -1;
+			}
+			return findNextSegment(r,s+1);
 		}
-		return findNextSegment(r, s-1)
 	}
 }
 
@@ -135,51 +148,82 @@ function advanceSegment(r,s) {
 			r++;
 			s = 40;
 		}
-		console.log("finding next segment round: " + r + " : Segment " + (s-1));
 		nextSegment = findNextSegment(r,s-1);
-		console.log("advancing segment.  next segment is: " );
-		console.log(nextSegment)
+	} else {
+		if(s+1 == segments) {
+			r++;
+			s = 0;
+		}
+		nextSegment = findNextSegment(r,s+1);
+	}
+	console.log("advancing segment.  next segment is: " );
+	console.log(nextSegment);
+	//currentRound = nextSegment.r;
+	//currentSegment = nextSegment.s;
 
+}
 
+function setTurnTaken(r,s,item) {
+	if(i[r][s][item] != null) {
+		i[r][s][item].taken = true;
 	}
 }
 
 function finishTurn(r,s,item,goAgain) {
-	i[r][s][item].taken = true;
-	if(goAgain) {
-		addInitItem(r+1, s, {"charName": i[r][s][item].charName, "turn": i[r][s][item].turn+1, "taken":false});
-	}
+	if(!i[r][s][item] != null && !i[r][s][item].taken) {
+		i[r][s][item].taken = true;
+		if(segments == 0) {
+			if(goAgain) {
+				addInitItem(r+1, s, {"playerName": i[r][s][item].playerName, "charName": i[r][s][item].charName, "turn": i[r][s][item].turn+1, "taken":false});
+			}
+		} else {
+			console.log("Clock type turn finish");
+			if(s+goAgain >= segments) {
 
-	if(actionsRemaining(r,s) == 0) {
-		console.log("Turn finished and no actions remaining in this segment.  Advancing Segment");
-		advanceSegment(r,s);
+				addInitItem(r+1, (s+goAgain)-segments, {"playerName": i[r][s][item].playerName, "charName": i[r][s][item].charName, "turn": i[r][s][item].turn+1, "taken": false});
+			} else {
+				addInitItem(r, s+goAgain, {"playerName": i[r][s][item].playerName, "charName": i[r][s][item].charName, "turn": i[r][s][item].turn+1, "taken": false});
+			}
+		}
+
+		if(actionsRemaining(r,s) == 0) {
+			console.log("Turn finished and no actions remaining in this segment.  Advancing Segment");
+			advanceSegment(r,s);
+		}
+	} else {
+		console.log(r + "|" + s + "|" + item + ": turn already taken");
 	}
 }
 
 console.log("init system");
-newInit(0);
+newInit(8);
 
 console.log("adding players");
 var r = addPlayer("nick", "turzol", "1.2.3.4", "#ccffaa", false);
-r = addPlayer("sue", "susan", "4.3.2.1", "#cfacfa", true);
+r = addPlayer("sue", "susan", "4.3.2.1", "#cfacfa", false);
 r = addPlayer("ken", "rakion", "1.1.1.1", "#bbbbbb", true);
 
-//console.log(players);
+console.log(players);
 
-setInit("turzol", 0, currentRound);
-setInit("rakion", 5, currentRound);
-setInit("susan", 5, currentRound);
 
-printInit();
-console.log("----------------------------");
 
-finishTurn(0,5,0, true);
-finishTurn(0,5,1, true);
-finishTurn(0,0,0, true);
-console.log("----------------------------");
+setInit("nick", "turzol", 6, currentRound);
+setInit("ken", "rakion", 7, currentRound);
+addInitReminder(2, 2, "ken", "", "Fireball!");
+//setInit("susan", 1, currentRound);
 
 printInit();
-console.log("----------------------------");
+//console.log("----------------------------");
+
+//finishTurn(0,1,0, true);
+//finishTurn(0,1,1, true);
+//finishTurn(0,6,0, 3);
+//finishTurn(0,7,0, 1);
+//finishTurn(0,1,1, 3);
+//console.log("----------------------------");
+
+//printInit();
+//console.log("----------------------------");
 
 
 
