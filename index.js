@@ -26,7 +26,7 @@ function resetPlayers() {
 function addPlayer(playerName, charName, ipAddress, color, isGameMaster) {
 	var addPlayer = true;
 	var player = {};
-	for(p in players) {
+	for(const p of players) {
 		if(p.playerName == playerName) {
 			addPlayer = false;
 		}
@@ -35,6 +35,8 @@ function addPlayer(playerName, charName, ipAddress, color, isGameMaster) {
 		player = {"playerName": playerName, "charName": charName, "ipAddress": ipAddress, "color": color, "isGM": isGameMaster};
 		players.push(player);
 	}
+
+
 	return player;
 } 
 
@@ -47,16 +49,16 @@ function addInitItem(r, s, t) {
 		i[r][s] = [];
 	}
 
-	console.log("pushing into i[" + r + "][" + s + "]");
+	//console.log("pushing into i[" + r + "][" + s + "]");
 	//console.log(t);
 	i[r][s].push(t);
 }
 
 function setInit(charName,segment,roundEnter) {
 	var setValid = true;
-	for(r in i) {
-		for(s in r) {
-			for(t in s) {
+	for(const r of i) {
+		for(const s of r) {
+			for(const t of s) {
 				if(t.charName == charName) {
 					setValid = false;	
 				}
@@ -65,8 +67,8 @@ function setInit(charName,segment,roundEnter) {
 	}
 
 	if(setValid) {
-		console.log("Add Init Item: " + roundEnter + " : " + segment);
-		addInitItem(roundEnter, segment, {"charName": charName, "topic": "First Action"});
+		//console.log("Add Init Item: " + roundEnter + " : " + segment);
+		addInitItem(roundEnter, segment, {"charName": charName, "turn": 1, "taken":false});
 	}
 }
 
@@ -87,6 +89,7 @@ function printInit() {
 				//console.log(i[j][k]);
 				if(i[j][k]) {
 					for(l = 0;l<i[j][k].length;l++) {
+						console.log(j + "|" + k + "|" + l + ": ");
 						console.log(i[j][k][l]);
 					}
 				}
@@ -95,6 +98,53 @@ function printInit() {
 	}
 }
 
+function actionsRemaining(r,s) {
+	var retVal = 0;
+	for(const item of i[r][s]) {
+		if(!item.taken) {
+			retVal++;
+		}
+	}
+	return retVal;
+}
+
+function findNextSegment(r,s) {
+	if(i[r][s] != null && i[r][s].length > 0) {
+		return {"r": r, "s": s};
+	} else {
+		if(i[r] == null) return null;
+		if(s == 0) {
+			r++;
+			s = 40;
+		}
+		findNextSegment(r, s-1)
+	}
+}
+
+function advanceSegment(r,s) {
+	if(segments == 0) { //D&D mode
+		if(s==0) {
+			r++;
+			s = 40;
+		}
+		nextSegment = findNextSegment(r,s-1);
+
+
+
+	}
+}
+
+function finishTurn(r,s,item,goAgain) {
+	i[r][s][item].taken = true;
+	if(goAgain) {
+		addInitItem(r+1, s, {"charName": i[r][s][item].charName, "turn": i[r][s][item].turn+1, "taken":false});
+	}
+
+	if(actionsRemaining(r,s) == 0) {
+		console.log("Turn finished and no actions remaining in this segment.  Advancing Segment");
+		advanceSegment(r,s);
+	}
+}
 
 console.log("init system");
 newInit(0);
@@ -104,10 +154,19 @@ var r = addPlayer("nick", "turzol", "1.2.3.4", "#ccffaa", false);
 r = addPlayer("sue", "susan", "4.3.2.1", "#cfacfa", true);
 r = addPlayer("ken", "rakion", "1.1.1.1", "#bbbbbb", true);
 
-//console.log(players);
+console.log(players);
 
 setInit("turzol", 0, currentRound);
-setInit("rakion", 5, 3);
-
+setInit("rakion", 5, currentRound);
 
 printInit();
+console.log("----------------------------");
+
+finishTurn(0,0,0, true);
+console.log("----------------------------");
+
+printInit();
+console.log("----------------------------");
+
+
+
