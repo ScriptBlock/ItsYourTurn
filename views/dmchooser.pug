@@ -1,0 +1,14 @@
+extends layout
+
+block content
+  h1 Choose a DM
+  div.container
+  ul
+    each val in players
+      li
+        button(type="button", class="btn btn-primary") #{val.playerName}
+
+
+
+
+

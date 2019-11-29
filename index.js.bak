@@ -1,3 +1,6 @@
+var express = require('express');
+var app = express();
+
 var i = [];
 /*
 	[0] = [
@@ -56,6 +59,7 @@ function addInitItem(r, s, t) {
 
 function addInitReminder(r,s, player, character, note) {
 	addInitItem(r,s, {"playerName": player, "charName": character, "note": note, "taken": false});
+	//
 }
 
 function setInit(playerName, charName,segment,roundEnter) {
@@ -83,7 +87,6 @@ function newInit(s) {
 	currentRound = 0;
     allowPlayerJoin = true;
     i = [];
-	
 }
 
 function printInit() {
@@ -195,35 +198,41 @@ function finishTurn(r,s,item,goAgain) {
 	}
 }
 
-console.log("init system");
-newInit(8);
+function testing() {
+	//console.log("init system");
+	//newInit(8);
+	//console.log("adding players");
+	//var r = addPlayer("nick", "turzol", "1.2.3.4", "#ccffaa", false);
+	//r = addPlayer("sue", "susan", "4.3.2.1", "#cfacfa", false);
+	//r = addPlayer("ken", "rakion", "1.1.1.1", "#bbbbbb", true);
+	//console.log(players);
+	//setInit("nick", "turzol", 6, currentRound);
+	//setInit("ken", "rakion", 7, currentRound);
+	//addInitReminder(2, 2, "ken", "", "Fireball!");
+	//setInit("susan", 1, currentRound);
 
-console.log("adding players");
-var r = addPlayer("nick", "turzol", "1.2.3.4", "#ccffaa", false);
-r = addPlayer("sue", "susan", "4.3.2.1", "#cfacfa", false);
-r = addPlayer("ken", "rakion", "1.1.1.1", "#bbbbbb", true);
+	//printInit();
+	//console.log("----------------------------");
 
-console.log(players);
+	//finishTurn(0,1,0, true);
+	//finishTurn(0,1,1, true);
+	//finishTurn(0,6,0, 3);
+	//finishTurn(0,7,0, 1);
+	//finishTurn(0,1,1, 3);
+	//console.log("----------------------------");
 
-
-
-setInit("nick", "turzol", 6, currentRound);
-setInit("ken", "rakion", 7, currentRound);
-addInitReminder(2, 2, "ken", "", "Fireball!");
-//setInit("susan", 1, currentRound);
-
-printInit();
-//console.log("----------------------------");
-
-//finishTurn(0,1,0, true);
-//finishTurn(0,1,1, true);
-//finishTurn(0,6,0, 3);
-//finishTurn(0,7,0, 1);
-//finishTurn(0,1,1, 3);
-//console.log("----------------------------");
-
-//printInit();
-//console.log("----------------------------");
+	//printInit();
+	//console.log("----------------------------");
+}
 
 
+
+//app.get('/', function (req, res) {
+//  res.send('Default!');
+//})
+
+app.get('/', (req, res) => res.send("Default!"));
+
+
+app.listen(30000, () => console.log("Server Started."));
 
