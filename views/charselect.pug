@@ -6,7 +6,13 @@ block content
       span(class="navbar-brand mb-0 h1") Hello #{un}
       form(action="/claimdm", method="POST")
         button(class="btn btn-outline-success") Claim DM
-    if isDMChosen && isDM
+    if isDMChosen
       span(class="navbar-brand mb-0 h1") [DM] Hello #{un} 
-      form(action="/releasedm", method="POST")
-        button(class="btn btn-outline-success") Release DM
+      if isDM
+        form(action="/releasedm", method="POST")
+          button(class="btn btn-outline-success") Release DM
+
+  main.container(role="main")
+    each player in unassignedPlayers
+      div(class="row mb-1")
+        button(class="btn btn-primary btn-lg btn-block") #{player.charName}

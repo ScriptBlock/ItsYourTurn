@@ -1,7 +1,7 @@
 var createError = require('http-errors');
 var express = require('express');
 var bodyParser = require("body-parser");
-
+var session = require('express-session')
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
@@ -22,18 +22,16 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
-//app.use('/', indexRouter);
-//app.use('/users', usersRouter);
+app.use(session({'secret': 'farts niffer', 'resave': false, 'saveUninitialized':true}));
 
 var users = [];
 //{userName: 'user', isGM: false, ipAddress: '1.1.1.1', lastActionTime: 'timedate'}
 
 var players = [
-{"charName":"Rakion", "userName":"Ken", "color":"#000000", "isGM": false},
-{"charName":"Turzol", "userName":"Nick", "color":"#000000", "isGM": false},
-{"charName":"Svetlana", "userName":"Susan", "color":"#000000", "isGM": false},
-{"charName":"Morgar", "userName":"Cullen", "color":"#000000", "isGM": false},
+{"charName":"Rakion", "userName":"", "color":"#000000", "isGM": false},
+{"charName":"Turzol", "userName":"", "color":"#000000", "isGM": false},
+{"charName":"Svetlana", "userName":"", "color":"#000000", "isGM": false},
+{"charName":"Morgar", "userName":"", "color":"#000000", "isGM": false},
 ]
 
 var isDMChosen = false;
@@ -66,11 +64,16 @@ function setUserForIP(ip, un) {
 function addIPToUserList(ip) {
 	console.log("Adding ip: " + ip + " to user list");
 	//in the future look up prior IPs and try to match namesfrom prior sessions
-	users.push({"userName": "", "isGM": false, "ipAddress": ip, "lastActionTime": Date.now()});
+	users.push({"userName": "", "isDM": false, "ipAddress": ip, "lastActionTime": Date.now()});
 }
 
 function un(ip) {
 	return users.filter(user => user.ipAddress === ip)[0].userName;
+}
+
+function setDM(ip) {
+	isDMChosen = true;
+	users.filter(user => user.ipAddress === ip)[0].isDM = true;
 }
 
 function getGMPlayer() {
@@ -81,8 +84,20 @@ function getGMPlayer() {
 	}
 	//console.log(retVal);
 	return retVal;
+}
+
+function playerHasChar(un) {
+	let playersForChar = players.filter(player => player.userName === un);
+	console.log("checking if player has a character");
+	console.log(playersForChar);
+	if(playersForChar.length == 0) {
+		return false;
+	} else {
+		return true;
+	}
 
 }
+
 
 
 function IPSecurityCheck(req, res, next) {
@@ -134,9 +149,14 @@ app.all('/', function(req, res, next) {
 })
 
 app.get("/", function(req, res) {
-	console.log("in app.get");
-	//res.send("Hello " + pn(req.ip));
-	res.render('main', {un: un(req.ip), hasDM: isDMChosen});
+
+	if(!playerHasChar(req.session.userName)) {
+		let unassignedPlayers = players.filter(player => player.userName === "");
+		//res.render('charselect', {'unassignedPlayers': unassignedPlayers});
+		res.render('charselect', {'unassignedPlayers': unassignedPlayers, 'un': un(req.ip), 'isDM': req.session.isDM, 'isDMChosen': isDMChosen});
+	} else {
+		res.render('main', {'un': un(req.ip), 'isDM': req.session.isDM, 'isDMChosen': isDMChosen});
+	}
 })
 
 
@@ -153,6 +173,7 @@ app.post("/edituser", function(req, res) {
 	let un = req.body.userName;
 	//let isDM = req.body.dmCheckBox;
 	setUserForIP(req.ip, un);
+	req.session.userName = un;
 	//console.log(users);
 	res.redirect("/");
 });
@@ -160,8 +181,22 @@ app.post("/edituser", function(req, res) {
 
 //--------------------- CLAIMDM ------------------- //
 app.post("/claimdm", function(req, res) {
+	if(!isDMChosen) {
+		setDM(req.ip);
+		req.session.isDM = true;
+	}
+	res.redirect("/");
 
-	
+})
+
+//--------------------- RELEASEDM ------------------- //
+app.post("/releasedm", function(req, res) {
+	if(isDMChosen) {
+		isDMChosen = false;
+		req.session.isDM = false;
+	}
+	res.redirect("/");
+
 })
 
 
