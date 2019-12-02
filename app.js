@@ -1,5 +1,7 @@
 var createError = require('http-errors');
 var express = require('express');
+var bodyParser = require("body-parser");
+
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
@@ -13,6 +15,8 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -32,7 +36,7 @@ var players = [
 {"charName":"Morgar", "userName":"Cullen", "color":"#000000", "isGM": false},
 ]
 
-var isAdminChosen = false;
+var isDMChosen = false;
 
 
 function isIPInSystem(ip) {
@@ -49,12 +53,25 @@ function isIPInSystem(ip) {
  	return retVal;
 }
 
+function ipHasUserName(ip) {
+	let userName = users.filter(user => user.ipAddress === ip)[0].userName;
+	return userName !== "";
+
+}
+
+function setUserForIP(ip, un) {
+	users.filter(user => user.ipAddress === ip)[0].userName = un;
+}
+
 function addIPToUserList(ip) {
 	console.log("Adding ip: " + ip + " to user list");
 	//in the future look up prior IPs and try to match namesfrom prior sessions
-	users.push({"charName": "", "isGM": false, "ipAddress": ip, "lastActionTime": Date.now()});
+	users.push({"userName": "", "isGM": false, "ipAddress": ip, "lastActionTime": Date.now()});
 }
 
+function un(ip) {
+	return users.filter(user => user.ipAddress === ip)[0].userName;
+}
 
 function getGMPlayer() {
 
@@ -91,20 +108,23 @@ app.route('/')
 	})
 */
 
-
+//--------------------- CATCHALL ------------------- //
 app.use(function(req, res, next) {
 	console.log("anther catchall with no route");
 	next();
 })
 
-
-//track IP and stuff
+//--------------------- MAIN ------------------- //
 app.all('/', function(req, res, next) {
 	console.log("User request from IP: " + req.ip);
 
 	if(isIPInSystem(req.ip)) {
-		console.log("IP is in system, going through");
-		next();
+		console.log("IP is in system");
+		if(ipHasUserName(req.ip)) {
+			next();
+		} else {
+			res.redirect("edituser/" + req.ip);
+		}
 	} else {
 		console.log("IP is not in the system, adding and redirecting to edituser");
 		addIPToUserList(req.ip);
@@ -113,21 +133,39 @@ app.all('/', function(req, res, next) {
 
 })
 
-
-
 app.get("/", function(req, res) {
 	console.log("in app.get");
-	res.send("Root");
+	//res.send("Hello " + pn(req.ip));
+	res.render('main', {un: un(req.ip), hasDM: isDMChosen});
 })
 
-app.get("/edituser/:ip", IPSecurityCheck, function(req, res) {
+
+//--------------------- EDITUSER ------------------- //
+app.get("/edituser/:ip", function(req, res) {
 	console.log("in EditUser.get");
-	res.send("EditUser for " + req.params.ip);
+	//res.send("EditUser for " + req.params.ip);
+	res.render('edituser');
 
 });
 
+app.post("/edituser", function(req, res) {
+	console.log("in EditUser.post");
+	let un = req.body.userName;
+	//let isDM = req.body.dmCheckBox;
+	setUserForIP(req.ip, un);
+	//console.log(users);
+	res.redirect("/");
+});
 
 
+//--------------------- CLAIMDM ------------------- //
+app.post("/claimdm", function(req, res) {
+
+	
+})
+
+
+//--------------------- MAYBE REMOVE THIS ------------------- //
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   console.log("in 404 catchall");

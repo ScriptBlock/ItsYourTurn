@@ -1,0 +1,13 @@
+extends layout
+
+block content
+  h1 Edit your info
+  div.container
+  form(action="/edituser" method="POST")
+    div.form-group
+      label(for="userName") Player Name
+      input.form-control(type="text" id="userName" placeholder="Enter name here", name="userName")
+    //div.form-check
+      //input.form-check-input(type="checkbox", id="dmCheckBox", name="dmCheckBox")
+      //label(for="dmCheckBox" class="form-check-label") I'm the DM
+    button(class="btn btn-primary" type="submit") Submit

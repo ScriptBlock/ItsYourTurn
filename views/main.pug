@@ -1,0 +1,8 @@
+extends layout
+
+block content
+  nav(class="navbar navbar-expand-md navbar-dark fixed-top bg-dark")
+    form(action="/claimdm", method="POST")
+      span(class="navbar-brand mb-0 h1") Hello #{un}
+      if !hasDM
+        button(class="btn btn-outline-success") Claim DM
