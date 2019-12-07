@@ -13,6 +13,7 @@ block content
           button(class="btn btn-outline-success") Release DM
 
   main.container(role="main")
-    each player in unassignedPlayers
-      div(class="row mb-1")
-        button(class="btn btn-primary btn-lg btn-block") #{player.charName}
+    form(action="/selectchar" method="POST")
+      each player in unassignedPlayers
+        div(class="row mb-1")
+          button(class="btn btn-primary btn-lg btn-block" name="charName" value= player.charName ) #{player.charName}

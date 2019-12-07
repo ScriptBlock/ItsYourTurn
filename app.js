@@ -98,7 +98,14 @@ function playerHasChar(un) {
 
 }
 
+function isCharacterChosen(charName) {
+	let playerForChar = players.filter(player => player.charName === charName)[0].userName
+	return playerForChar !== ""
+}
 
+function setCharPlayer(charName, userName) {
+	players.filter(player => player.charName === charName)[0].userName = userName
+}
 
 function IPSecurityCheck(req, res, next) {
 	if(req.params.ip === req.ip) {
@@ -153,9 +160,9 @@ app.get("/", function(req, res) {
 	if(!playerHasChar(req.session.userName)) {
 		let unassignedPlayers = players.filter(player => player.userName === "");
 		//res.render('charselect', {'unassignedPlayers': unassignedPlayers});
-		res.render('charselect', {'unassignedPlayers': unassignedPlayers, 'un': un(req.ip), 'isDM': req.session.isDM, 'isDMChosen': isDMChosen});
+		res.render('charselect', {'unassignedPlayers': unassignedPlayers, 's': req.session, 'isDMChosen': isDMChosen});
 	} else {
-		res.render('main', {'un': un(req.ip), 'isDM': req.session.isDM, 'isDMChosen': isDMChosen});
+		res.render('main', {'s': req.session, 'isDMChosen': isDMChosen});
 	}
 })
 
@@ -198,6 +205,23 @@ app.post("/releasedm", function(req, res) {
 	res.redirect("/");
 
 })
+
+//--------------------- CharacterSelections ------------------- //
+app.post("/selectchar", function(req, res) {
+	if(!isCharacterChosen(req.body.charName)) {
+		//console.log(req.body.charName);
+		setCharPlayer(req.body.charName, req.session.userName);
+		req.session.charName = req.body.charName
+	}
+	res.redirect("/");
+})
+
+app.post("/releasechar", function(req, res) {
+	setCharPlayer(req.session.charName, "");
+	req.session.charName = "";
+	res.redirect("/");
+})
+
 
 
 //--------------------- MAYBE REMOVE THIS ------------------- //
