@@ -302,19 +302,27 @@ app.use(function(req, res, next) {
 app.all('/', function(req, res, next) {
 	console.log("User request from IP: " + req.ip);
 
-	if(isIPInSystem(req.ip)) {
-		console.log("IP is in system");
-		if(ipHasUserName(req.ip)) {
-			next();
-		} else {
-			res.redirect("edituser/" + req.ip);
-		}
-	} else {
+	if(!isIPInSystem(req.ip)) {	
 		console.log("IP is not in the system, adding and redirecting to edituser");
 		addIPToUserList(req.ip);
-		res.redirect("edituser/" + req.ip);
 	}
 
+	if(ipHasUserName(req.ip)) {
+		if(req.session.userName === undefined || req.session.userName === null || req.session.userName === "") {
+			req.session.userName = un(req.ip);
+			req.cookie("userName", req.session.userName);
+		}
+		next();
+	} else {
+		let cookieUserName = req.cookies.userName
+		if(cookieUserName === undefined) {
+			res.redirect("edituser/" + req.ip);
+		} else {
+			setUserForIP(req.ip, cookieUserName);
+			req.session.userName = cookieUserName;
+			next();
+		}		
+	}
 })
 
 app.get("/", function(req, res) {
@@ -351,6 +359,7 @@ app.post("/edituser", function(req, res) {
 	//let isDM = req.body.dmCheckBox;
 	setUserForIP(req.ip, un);
 	req.session.userName = un;
+	res.cookie("userName", un);
 	//console.log(users);
 	res.redirect("/");
 });
