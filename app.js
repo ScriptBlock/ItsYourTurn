@@ -56,7 +56,7 @@ function setInit(userName, charName,segment,roundEnter) {
 			if(s != null) {
 				for(const t of s) {
 					if(t.charName == charName) {
-						setValid = false;	
+						setValid = false;	//this player is already in the initiative
 					}
 				}
 			}
@@ -279,6 +279,52 @@ function IPSecurityCheck(req, res, next) {
 	}
 }
 
+function getDNDInitForView(r,s) {
+	console.log("------------------------------------------------");
+	//let retVal = JSON.parse(JSON.stringify(initiative[r])); //deep copy of initiative for a specific round
+
+	//console.log("in get dnd init for view");
+	//console.log("deepcopied initiative for round: " + r);
+	//console.log(retVal);
+
+	//console.log("------------------------------------------------");
+	//retVal.reverse();
+
+	//console.log("reversed");
+	//console.log(retVal);
+	//console.log("------------------------------------------------");
+
+	//retVal.map(s => {
+	//	if(s && s.length > 1) {
+	//		s.reverse()
+	//	}
+	//});
+	//console.log("segments reversed");
+	//console.log(retVal);
+	//console.log("------------------------------------------------");
+
+	//for(let i = retVal.length; i>0; i--) {
+	for(let s = initiative[r].length-1; s>=0; s--) {	
+		console.log("Segment: " + s);
+		if(initiative[r][s]) {
+			for(let t = initiative[r][s].length-1; t>=0;t--) {
+				console.log("--- " + initiative[r][s][t].charName + "(" + initiative[r][s][t].userName + ")");
+			}
+		} else {
+			console.log("--- Empty");
+		}
+		//console.log(initiative[r][s-1]);
+
+		//if(initiative[r]) {
+		//	initiative[r].map(j => console.log("---" + j.charName));
+		//} else {
+		//	console.log("--- Empty");
+		//}
+
+	}
+
+}
+
 /*
 app.route('/')
 	.get(function(req, res) {
@@ -333,11 +379,12 @@ app.get("/", function(req, res) {
 		let loggedOnUsers = players.filter(player => player.userName != "");
 		let initView = null;
 		if(initiative.length > 0) {
-			initView = initiative[currentRound];
-			console.log("initview");
-			console.log(initView);
+			//initView = initiative[currentRound];
+			//console.log("initview");
+			//console.log(initView);
+			getDNDInitForView(currentRound, 0);
 		}
-		res.render('dmmain', {'s': req.session, 'isDMChosen': isDMChosen, 'loggedOnUsers': loggedOnUsers, 'initiative': initView});
+		res.render('dmmain', {'s': req.session, 'isDMChosen': isDMChosen, 'loggedOnUsers': loggedOnUsers, 'initiative': null});
 	} else {
 		if(!playerHasChar(req.session.userName)) {
 			let unassignedPlayers = players.filter(player => player.userName === "");
@@ -367,7 +414,11 @@ app.post("/newinitiative", function(req, res) {
 	//testing
 	//function setInit(playerName, charName,segment,roundEnter) {
 
-	setInit(req.session.userName, "Booty", 3, currentRound);
+	setInit(req.session.userName, "Alice",2, currentRound);
+	setInit(req.session.userName, "Bob", 5, currentRound);
+	setInit(req.session.userName, "Charlie", 5, currentRound);
+	setInit(req.session.userName, "David", 8, currentRound);
+	
 	res.redirect("/");
 });
 
