@@ -35,7 +35,7 @@ function addInitItem(r, s, t) {
 		initiative[r] = [];
 	}
 
-	if(i[r][s] == null) {
+	if(initiative[r][s] == null) {
 		initiative[r][s] = [];
 	}
 
@@ -49,7 +49,7 @@ function addInitReminder(r,s, player, character, note) {
 	//
 }
 
-function setInit(playerName, charName,segment,roundEnter) {
+function setInit(userName, charName,segment,roundEnter) {
 	var setValid = true;
 	for(const r of initiative) {
 		for(const s of r) {
@@ -65,7 +65,7 @@ function setInit(playerName, charName,segment,roundEnter) {
 
 	if(setValid) {
 		//console.log("Add Init Item: " + roundEnter + " : " + segment);
-		addInitItem(roundEnter, segment, {"playerName": playerName, "charName": charName, "turn": 1, "taken":false, "note": "Entered Initiative"});
+		addInitItem(roundEnter, segment, {"userName": userName, "charName": charName, "turn": 1, "taken":false, "note": "Entered Initiative"});
 	}
 }
 
@@ -93,6 +93,7 @@ function printInit() {
 		}
 	}
 }
+
 
 function actionsRemaining(r,s) {
 	var retVal = 0;
@@ -163,15 +164,15 @@ function finishTurn(r,s,item,goAgain) {
 		initiative[r][s][item].taken = true;
 		if(segments == 0) {
 			if(goAgain) {
-				addInitItem(r+1, s, {"playerName": initiative[r][s][item].playerName, "charName": initiative[r][s][item].charName, "turn": initiative[r][s][item].turn+1, "taken":false});
+				addInitItem(r+1, s, {"userName": initiative[r][s][item].userName, "charName": initiative[r][s][item].charName, "turn": initiative[r][s][item].turn+1, "taken":false});
 			}
 		} else {
 			console.log("Clock type turn finish");
 			if(s+goAgain >= segments) {
 
-				addInitItem(r+1, (s+goAgain)-segments, {"playerName": initiative[r][s][item].playerName, "charName": initiative[r][s][item].charName, "turn": initiative[r][s][item].turn+1, "taken": false});
+				addInitItem(r+1, (s+goAgain)-segments, {"userName": initiative[r][s][item].userName, "charName": initiative[r][s][item].charName, "turn": initiative[r][s][item].turn+1, "taken": false});
 			} else {
-				addInitItem(r, s+goAgain, {"playerName": initiative[r][s][item].playerName, "charName": initiative[r][s][item].charName, "turn": initiative[r][s][item].turn+1, "taken": false});
+				addInitItem(r, s+goAgain, {"userName": initiative[r][s][item].userName, "charName": initiative[r][s][item].charName, "turn": initiative[r][s][item].turn+1, "taken": false});
 			}
 		}
 
@@ -330,8 +331,13 @@ app.get("/", function(req, res) {
 	if(req.session.isDM) {
 		console.log("rendering dmmain");
 		let loggedOnUsers = players.filter(player => player.userName != "");
-
-		res.render('dmmain', {'s': req.session, 'isDMChosen': isDMChosen, 'loggedOnUsers': loggedOnUsers, 'initiative': null});
+		let initView = null;
+		if(initiative.length > 0) {
+			initView = initiative[currentRound];
+			console.log("initview");
+			console.log(initView);
+		}
+		res.render('dmmain', {'s': req.session, 'isDMChosen': isDMChosen, 'loggedOnUsers': loggedOnUsers, 'initiative': initView});
 	} else {
 		if(!playerHasChar(req.session.userName)) {
 			let unassignedPlayers = players.filter(player => player.userName === "");
@@ -344,6 +350,26 @@ app.get("/", function(req, res) {
 	}
 })
 
+
+//--------------------- NEWINITIATIVE ------------------- //
+app.post("/newinitiative", function(req, res) {
+	console.log("in new init");
+	let newInitMode = req.body.mode;
+	let re = /clock(\d+)/;
+	let results = re.exec(newInitMode);
+
+	if(results) {
+		let segs = results[1];
+		newInit(segs);
+	} else {
+		newInit(0);
+	}
+	//testing
+	//function setInit(playerName, charName,segment,roundEnter) {
+
+	setInit(req.session.userName, "Booty", 3, currentRound);
+	res.redirect("/");
+});
 
 //--------------------- EDITUSER ------------------- //
 app.get("/edituser/:ip", function(req, res) {
