@@ -319,15 +319,16 @@ app.all('/', function(req, res, next) {
 
 app.get("/", function(req, res) {
 
-	if(!playerHasChar(req.session.userName)) {
-		let unassignedPlayers = players.filter(player => player.userName === "");
-		//res.render('charselect', {'unassignedPlayers': unassignedPlayers});
-		res.render('charselect', {'unassignedPlayers': unassignedPlayers, 's': req.session, 'isDMChosen': isDMChosen});
-	} else {
-		if(req.session.isDM) {
-			console.log("rendering dmmain");
+	if(req.session.isDM) {
+		console.log("rendering dmmain");
+		let loggedOnUsers = players.filter(player => player.userName != "");
 
-			res.render('dmmain', {'s': req.session, 'isDMChosen': isDMChosen, 'initiative': initiative});
+		res.render('dmmain', {'s': req.session, 'isDMChosen': isDMChosen, 'loggedOnUsers': loggedOnUsers});
+	} else {
+		if(!playerHasChar(req.session.userName)) {
+			let unassignedPlayers = players.filter(player => player.userName === "");
+			//res.render('charselect', {'unassignedPlayers': unassignedPlayers});
+			res.render('charselect', {'unassignedPlayers': unassignedPlayers, 's': req.session, 'isDMChosen': isDMChosen});
 		} else {
 			console.log("rendering main");
 			res.render('main', {'s': req.session, 'isDMChosen': isDMChosen});

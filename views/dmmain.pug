@@ -11,7 +11,7 @@ block content
       form(action="/releasedm", method="POST")
         div.container
           button(class="btn btn-outline-success") Release DM
-    if s.charName !== null
+    if s.charName != null && s.charName != ""
       form(action="/releasechar", method="POST")
         div.container
           button(class="btn btn-outline-success") Release #{s.charName}
@@ -37,5 +37,10 @@ block content
           form(action="/movecharacterdown", method="POST")
             button(class="btn btn-outline-success btn-block") Move ▼
 
-      div(class="col-sm") Player Listing
-
+      div(class="col-sm")
+        div.container
+          ul.list-group
+            li(class="list-group-item d-flex justify-content-between align-iitems-center disabled") Active Players
+            each user in loggedOnUsers
+              li(class="list-group-item d-flex justify-content-between align-iitems-center ") #{user.charName}
+                span(class="badge badge-primary badge-pill") #{user.userName}
