@@ -18,6 +18,24 @@ block content
 
   main.container(role="main")
     div(class="row")
-      div(class="col-sm") Init Coolumn
-      div(class="col-sm") Controls
+      div(class="col-sm")
+        div.container(class="d-flex justify-content-center mb-3")
+          form(action="/newinitiative", method="POST")
+            button(class="btn btn-outline-success") Start A New Initiative          
+        div.container
+          ul.list-group
+            li(class="list-group-item") Item 1
+            li(class="list-group-item") Item 2
+            li(class="list-group-item") Item 3
+            li(class="list-group-item") Item 4
+            li(class="list-group-item") Item 5
+      div(class="col-sm") 
+        div.container(class="justify-content-center mb-3")
+          form(action="/movecharacterup", method="POST")
+            button(class="btn btn-outline-success btn-block") Move ▲
+        div.container(class="justify-content-center mb-3")
+          form(action="/movecharacterdown", method="POST")
+            button(class="btn btn-outline-success btn-block") Move ▼
+
       div(class="col-sm") Player Listing
+
