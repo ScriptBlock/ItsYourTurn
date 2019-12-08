@@ -31,13 +31,12 @@ block content
                         button(class="btn btn-outline-success btn-block" name="mode" value="clock12") 12 Round Clock Style
                 else          
                     ul.list-group
-                        each v,i in initiative
-                            if(v !== undefined) 
-                                each w,j in v 
-                                    li(class="list-group-item d-flex justify-content-between align-items-center ") #{i+1}:#{j+1} #{w.charName}
-                                        span(class="badge badge-primary badge-pill") #{w.userName}
+                        each i in initiative
+                            if i.data
+                                li(class="list-group-item d-flex justify-content-between align-items-center ") #{i.segment+1}: #{i.turn+1} #{i.data.charName}
+                                    span(class="badge badge-primary badge-pill") #{i.data.userName}
                             else
-                                li(class="list-group-item d-flex justify-content-between align-items-center ") #{i+1} Empty
+                                li(class="list-group-item d-flex justify-content-between align-items-center ") #{i.segment+1}: #{i.turn+1}
 
             div(class="col-sm justify-content-center") 
                 h2(class="text-center") Controls

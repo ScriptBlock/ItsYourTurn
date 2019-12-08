@@ -281,47 +281,21 @@ function IPSecurityCheck(req, res, next) {
 
 function getDNDInitForView(r,s) {
 	console.log("------------------------------------------------");
-	//let retVal = JSON.parse(JSON.stringify(initiative[r])); //deep copy of initiative for a specific round
-
-	//console.log("in get dnd init for view");
-	//console.log("deepcopied initiative for round: " + r);
-	//console.log(retVal);
-
-	//console.log("------------------------------------------------");
-	//retVal.reverse();
-
-	//console.log("reversed");
-	//console.log(retVal);
-	//console.log("------------------------------------------------");
-
-	//retVal.map(s => {
-	//	if(s && s.length > 1) {
-	//		s.reverse()
-	//	}
-	//});
-	//console.log("segments reversed");
-	//console.log(retVal);
-	//console.log("------------------------------------------------");
+	let retVal = [];
 
 	//for(let i = retVal.length; i>0; i--) {
 	for(let s = initiative[r].length-1; s>=0; s--) {	
-		console.log("Segment: " + s);
 		if(initiative[r][s]) {
-			for(let t = initiative[r][s].length-1; t>=0;t--) {
-				console.log("--- " + initiative[r][s][t].charName + "(" + initiative[r][s][t].userName + ")");
+			let t = 0;
+			//for(let t = initiative[r][s].length-1; t>=0;t--) {
+			for(const data of initiative[r][s]) {
+				retVal.push({"segment":s, "turn":t++, "data": data});
 			}
 		} else {
-			console.log("--- Empty");
+			retVal.push({"segment":s, "turn":-1, "data":null})
 		}
-		//console.log(initiative[r][s-1]);
-
-		//if(initiative[r]) {
-		//	initiative[r].map(j => console.log("---" + j.charName));
-		//} else {
-		//	console.log("--- Empty");
-		//}
-
 	}
+	return retVal;
 
 }
 
@@ -382,9 +356,11 @@ app.get("/", function(req, res) {
 			//initView = initiative[currentRound];
 			//console.log("initview");
 			//console.log(initView);
-			getDNDInitForView(currentRound, 0);
+			initView = getDNDInitForView(currentRound, 0);
 		}
-		res.render('dmmain', {'s': req.session, 'isDMChosen': isDMChosen, 'loggedOnUsers': loggedOnUsers, 'initiative': null});
+		console.log("initview: ");
+		console.log(initView);
+		res.render('dmmain', {'s': req.session, 'isDMChosen': isDMChosen, 'loggedOnUsers': loggedOnUsers, 'initiative': initView});
 	} else {
 		if(!playerHasChar(req.session.userName)) {
 			let unassignedPlayers = players.filter(player => player.userName === "");
