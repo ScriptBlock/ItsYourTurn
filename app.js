@@ -323,7 +323,7 @@ app.get("/", function(req, res) {
 		console.log("rendering dmmain");
 		let loggedOnUsers = players.filter(player => player.userName != "");
 
-		res.render('dmmain', {'s': req.session, 'isDMChosen': isDMChosen, 'loggedOnUsers': loggedOnUsers});
+		res.render('dmmain', {'s': req.session, 'isDMChosen': isDMChosen, 'loggedOnUsers': loggedOnUsers, 'initiative': null});
 	} else {
 		if(!playerHasChar(req.session.userName)) {
 			let unassignedPlayers = players.filter(player => player.userName === "");
