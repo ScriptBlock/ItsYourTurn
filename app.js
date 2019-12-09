@@ -279,7 +279,7 @@ function IPSecurityCheck(req, res, next) {
 	}
 }
 
-function getDNDInitForView(r,s) {
+function getDNDInitForView(r,seg) {
 	console.log("------------------------------------------------");
 	let retVal = [];
 
@@ -289,7 +289,11 @@ function getDNDInitForView(r,s) {
 			let t = 0;
 			//for(let t = initiative[r][s].length-1; t>=0;t--) {
 			for(const data of initiative[r][s]) {
-				retVal.push({"segment":s, "turn":t++, "data": data});
+				if(s === seg) {
+					retVal.push({"segment":s, "turn":t++, "selected": true, "data": data});
+				} else {
+					retVal.push({"segment":s, "turn":t++, "selected": false, "data": data});
+				}
 			}
 		} else {
 			retVal.push({"segment":s, "turn":-1, "data":null})
@@ -356,10 +360,10 @@ app.get("/", function(req, res) {
 			//initView = initiative[currentRound];
 			//console.log("initview");
 			//console.log(initView);
-			initView = getDNDInitForView(currentRound, 0);
+			initView = getDNDInitForView(currentRound, 5);
 		}
-		console.log("initview: ");
-		console.log(initView);
+		//console.log("initview: ");
+		//console.log(initView);
 		res.render('dmmain', {'s': req.session, 'isDMChosen': isDMChosen, 'loggedOnUsers': loggedOnUsers, 'initiative': initView});
 	} else {
 		if(!playerHasChar(req.session.userName)) {
