@@ -402,6 +402,17 @@ app.post("/newinitiative", function(req, res) {
 	res.redirect("/");
 });
 
+
+app.post("/addtoinit", function(req, res) {
+	console.log("adding new item to init");
+	let charName = req.body.addtype;
+	let addLocation = req.body.addplace;
+	console.log("charname: " + charName);
+	console.log("addLocation: " + addLocation);
+	res.redirect("/");
+
+})
+
 //--------------------- EDITUSER ------------------- //
 app.get("/edituser/:ip", function(req, res) {
 	console.log("in EditUser.get");
