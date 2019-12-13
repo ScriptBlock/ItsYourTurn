@@ -239,6 +239,10 @@ function setDM(ip) {
 	users.filter(user => user.ipAddress === ip)[0].isDM = true;
 }
 
+function isDM(name) {
+	return isDMChosen && users.filter(user => user.userName === name)[0].isDM;
+}
+
 function getGMPlayer() {
 
 	let retVal = users.filter(player => player.isGM);
@@ -335,7 +339,7 @@ app.all('/', function(req, res, next) {
 	if(ipHasUserName(req.ip)) {
 		if(req.session.userName === undefined || req.session.userName === null || req.session.userName === "") {
 			req.session.userName = un(req.ip);
-			req.cookie("userName", req.session.userName);
+			res.cookie("userName", req.session.userName);
 		}
 		next();
 	} else {
@@ -407,8 +411,19 @@ app.post("/addtoinit", function(req, res) {
 	console.log("adding new item to init");
 	let charName = req.body.addtype;
 	let addLocation = req.body.addplace;
-	console.log("charname: " + charName);
-	console.log("addLocation: " + addLocation);
+
+	let userAllowedToAdd = true;
+	//console.log("charname: " + charName);
+	//console.log("addLocation: " + addLocation);
+	if(userAllowedToAdd) {
+		if(addLocation === "endofround") {
+			if(segments === 0) { //D&D rounds
+				setInit(req.session.userName, charName, 0, currentRound);
+			} else {  // clock rounds
+				setInit(req.session.userName, charName, segments-1, currentRound);
+			}
+		}
+	}
 	res.redirect("/");
 
 })
