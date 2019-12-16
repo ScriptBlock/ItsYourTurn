@@ -19,6 +19,10 @@ block content
 
 
     main(class="container px-0" role="main")
+        div(class="row justify-content-center mb-sm-2 p-2 bg-secondary")
+            button(class="btn btn-light mr-sm-2 border-dark" type="button") 🢀 Rewind
+            div(class="alert alert-primary m-0" role="alert") Round: 1 / Segment: 1
+            button(class="btn btn-light ml-sm-2 border-dark" type="button") Next 🢂
         div(class="row")
             div(class="col-sm")
                 h2(class="text-center") Initiative
@@ -64,8 +68,6 @@ block content
                                 button.dropdown-item(name="addplace" value="nextsegment") Add next
                                 button.dropdown-item(name="addplace" value="topofnextround") Add top of next round
                                 button.dropdown-item(name="addplace" value="endofround") Add at end of round
-
-
 
             div(class="col-sm")
                 h2(class="text-center") Active Players
