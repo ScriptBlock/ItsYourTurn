@@ -1,16 +1,16 @@
 extends layout
 
 block content
-    nav(class="navbar navbar-expand-md navbar-dark fixed-top bg-dark")
+    nav(class='navbar navbar-expand-md navbar-dark fixed-top bg-dark')
         if !isDMChosen
-            span(class="navbar-brand mb-0 h1") Hello #{s.userName}
-            form(action="/claimdm", method="POST")
-                button(class="btn btn-outline-success") Claim DM
+            span(class='navbar-brand mb-0 h1') Hello #{s.userName} 
+            form(action='/claimdm', method='POST')
+                button(class="btn btn-outline-success") Claim DM 
         if isDMChosen && s.isDM
-            span(class="navbar-brand mb-0 h1") [DM] Hello #{s.userName} 
+            span(class="navbar-brand mb-0 h1") [DM] Hello #{s.userName}  
             form(action="/releasedm", method="POST")
                 div.container
-                    button(class="btn btn-outline-success") Release DM
+                    button(class="btn btn-outline-success") Release DM 
         if s.charName != null && s.charName != ""
             form(action="/releasechar", method="POST")
                 div.container
@@ -33,7 +33,7 @@ block content
                         button(class="btn btn-outline-success btn-block" name="mode" value="clock8") 8 Round Clock Style
                         button(class="btn btn-outline-success btn-block" name="mode" value="clock10") 10 Round Clock Style
                         button(class="btn btn-outline-success btn-block" name="mode" value="clock12") 12 Round Clock Style
-                else          
+                else if started         
                     ul.list-group
                         each i in initiative
                             bg-secondary
@@ -47,6 +47,10 @@ block content
                                 
                             else
                                 li(class="list-group-item d-flex justify-content-between align-items-center bg-secondary") #{i.segment+1}: Empty
+                else
+                    form(action="/startinitiative", method="POST")
+                        button(class="btn btn-outline-success btn-block" value="start") Start Initiative
+
 
             div(class="col-sm justify-content-center") 
                 h2(class="text-center") Controls

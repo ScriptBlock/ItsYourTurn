@@ -23,11 +23,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({'secret': 'farts niffer', 'resave': false, 'saveUninitialized':true}));
 
 
-var initiative = [];
+var initiative = null;
 var segments = 0; //0 means 1 action per round (or D&D type). > 0 = clock type
 var currentRound = 0;
 var currentSegment = 0;
-
+var allowPlayerJoin = false;
 
 
 function addInitItem(r, s, t) {
@@ -49,7 +49,24 @@ function addInitReminder(r,s, player, character, note) {
 	//
 }
 
+function charInInit(charName) {
+	let retVal = false;
+	for(const r of initiative) {
+		for(const s of r) {
+			if(s != null) {
+				for(const t of s) {
+					if(t.charName == charName) {
+						retVal = true;	//this player is already in the initiative
+					}
+				}
+			}
+		}
+	}
+	return retVal;
+}
+
 function setInit(userName, charName,segment,roundEnter) {
+	/*
 	var setValid = true;
 	for(const r of initiative) {
 		for(const s of r) {
@@ -62,8 +79,11 @@ function setInit(userName, charName,segment,roundEnter) {
 			}
 		}
 	}
+	*/
 
-	if(setValid) {
+
+	//if(setValid) {
+	if(!charInInit(charName)) {
 		//console.log("Add Init Item: " + roundEnter + " : " + segment);
 		addInitItem(roundEnter, segment, {"userName": userName, "charName": charName, "turn": 1, "taken":false, "note": "Entered Initiative"});
 	}
@@ -265,6 +285,11 @@ function playerHasChar(un) {
 
 }
 
+function charForUsername(un) {
+	let result = players.filter(player => player.userName === un);
+	return result[0].charName;
+}
+
 function isCharacterChosen(charName) {
 	let playerForChar = players.filter(player => player.charName === charName)[0].userName
 	return playerForChar !== ""
@@ -287,25 +312,51 @@ function getDNDInitForView(r,seg) {
 	console.log("------------------------------------------------");
 	let retVal = [];
 
-	//for(let i = retVal.length; i>0; i--) {
-	for(let s = initiative[r].length-1; s>=0; s--) {	
-		if(initiative[r][s]) {
-			let t = 0;
-			//for(let t = initiative[r][s].length-1; t>=0;t--) {
-			for(const data of initiative[r][s]) {
-				if(s === seg) {
-					retVal.push({"segment":s, "turn":t++, "selected": true, "data": data});
-				} else {
-					retVal.push({"segment":s, "turn":t++, "selected": false, "data": data});
+	if(initiative !=  null && initiative.length > 0) {  
+		
+		//for(let i = retVal.length; i>0; i--) {
+		for(let s = initiative[r].length-1; s>=0; s--) {	
+			if(initiative[r][s]) {
+				let t = 0;
+				//for(let t = initiative[r][s].length-1; t>=0;t--) {
+				for(const data of initiative[r][s]) {
+					if(s === seg) {
+						retVal.push({"segment":s, "turn":t++, "selected": true, "data": data});
+					} else {
+						retVal.push({"segment":s, "turn":t++, "selected": false, "data": data});
+					}
 				}
+			} else {
+				retVal.push({"segment":s, "turn":-1, "data":null})
 			}
-		} else {
-			retVal.push({"segment":s, "turn":-1, "data":null})
 		}
 	}
 	return retVal;
 
 }
+
+
+function buildPugData(req, view) {
+	let retVal = null;
+	switch(view) {
+		case "dmmain":
+			let loggedOnUsers = players.filter(player => player.userName != "");
+			let initView = null;
+			if(initiative != null) {
+				initView = getDNDInitForView(currentRound, 5); //TODO change this to currentSegment
+			}
+			console.log("built initiative view: " );
+			console.log(initView);
+			retVal = {'s': req.session, 'isDMChosen': isDMChosen, 'loggedOnUsers': loggedOnUsers, 'initiative': initView, 'started': !allowPlayerJoin };
+			break;
+		case "setinit":
+			retVal = {'s': req.session, 'isDMChosen': isDMChosen };
+			break;
+	}
+
+	return retVal;
+}
+
 
 /*
 app.route('/')
@@ -354,21 +405,24 @@ app.all('/', function(req, res, next) {
 	}
 })
 
+
 app.get("/", function(req, res) {
 
 	if(req.session.isDM) {
 		console.log("rendering dmmain");
-		let loggedOnUsers = players.filter(player => player.userName != "");
-		let initView = null;
-		if(initiative.length > 0) {
+		//let loggedOnUsers = players.filter(player => player.userName != "");
+		//let initView = null;
+		//if(initiative.length > 0) {
 			//initView = initiative[currentRound];
 			//console.log("initview");
 			//console.log(initView);
-			initView = getDNDInitForView(currentRound, 5);
-		}
+			//initView = getDNDInitForView(currentRound, 5);
+		//}
 		//console.log("initview: ");
 		//console.log(initView);
-		res.render('dmmain', {'s': req.session, 'isDMChosen': isDMChosen, 'loggedOnUsers': loggedOnUsers, 'initiative': initView});
+		let dmmainPugData = buildPugData(req, "dmmain");
+		//res.render('dmmain', {'s': req.session, 'isDMChosen': isDMChosen, 'loggedOnUsers': loggedOnUsers, 'initiative': initView, });
+		res.render('dmmain', dmmainPugData);
 	} else {
 		if(!playerHasChar(req.session.userName)) {
 			let unassignedPlayers = players.filter(player => player.userName === "");
@@ -376,7 +430,15 @@ app.get("/", function(req, res) {
 			res.render('charselect', {'unassignedPlayers': unassignedPlayers, 's': req.session, 'isDMChosen': isDMChosen});
 		} else {
 			console.log("rendering main");
-			res.render('main', {'s': req.session, 'isDMChosen': isDMChosen});
+			//if(allowPlayerJoin && !charInInit(charForUsername(req.session.userName))) {
+			if(allowPlayerJoin && !charInInit(req.session.charName)) {
+				console.log("rendering setinit for " + req.session.userName);
+				let pugData = buildPugData(req, "setinit");
+				console.log(pugData);
+				res.render('setinit', pugData);
+			} else {
+				res.render('main', {'s': req.session, 'isDMChosen': isDMChosen});
+			}
 		}
 	}
 })
@@ -398,10 +460,10 @@ app.post("/newinitiative", function(req, res) {
 	//testing
 	//function setInit(playerName, charName,segment,roundEnter) {
 
-	setInit(req.session.userName, "Alice",2, currentRound);
-	setInit(req.session.userName, "Bob", 5, currentRound);
-	setInit(req.session.userName, "Charlie", 5, currentRound);
-	setInit(req.session.userName, "David", 8, currentRound);
+	//setInit(req.session.userName, "Alice",2, currentRound);
+	//setInit(req.session.userName, "Bob", 5, currentRound);
+	//setInit(req.session.userName, "Charlie", 5, currentRound);
+	//setInit(req.session.userName, "David", 8, currentRound);
 	
 	res.redirect("/");
 });
