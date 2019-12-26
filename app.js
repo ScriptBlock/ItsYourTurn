@@ -350,10 +350,29 @@ function buildPugData(req, view) {
 			retVal = {'s': req.session, 'isDMChosen': isDMChosen, 'loggedOnUsers': loggedOnUsers, 'initiative': initView, 'started': !allowPlayerJoin };
 			break;
 		case "setinit":
-			retVal = {'s': req.session, 'isDMChosen': isDMChosen };
+			let rows = 0; 
+			let columns = 0;
+			console.log("building setinit for " + segments + " segs");
+			switch(segments) {
+				case "0":
+					rows = 5; columns = 5;
+					break;
+				case "8":
+					console.log("dung eating fool");
+					rows = 2; columns = 4;
+					break;
+				case "10":
+					rows = 2; columns = 5;
+					break;
+				case "12":
+					rows = 3; columns = 4;
+					break;
+			}
+
+			retVal = {'s': req.session, 'isDMChosen': isDMChosen, 'rows': rows, 'columns': columns };
 			break;
 	}
-
+	console.log(retVal);
 	return retVal;
 }
 
@@ -434,7 +453,7 @@ app.get("/", function(req, res) {
 			if(allowPlayerJoin && !charInInit(req.session.charName)) {
 				console.log("rendering setinit for " + req.session.userName);
 				let pugData = buildPugData(req, "setinit");
-				console.log(pugData);
+				//console.log(pugData);
 				res.render('setinit', pugData);
 			} else {
 				res.render('main', {'s': req.session, 'isDMChosen': isDMChosen});
