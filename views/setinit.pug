@@ -19,15 +19,16 @@ block content
 
 
     main(class="container px-0" role="main")
-        div(class="row justify-content-center mb-sm-2 p-2")
-            h2 Enter your initiative
-        - var i = 0; total = 1;
-        while i++ < rows
-            div(class="row justify-content-center mb-sm-2 ")
-                - var j = 0;
-                while j++ < columns
-                    div(class="col justify-content-center") 
-                        button(class="btn btn-outline-success  btn-lg btn-block" value="#{total}") #{total++}
+        form(action="/setinitiative", method="POST")
+            div(class="row justify-content-center mb-sm-2 p-2")
+                h2 Enter your initiative
+            - var i = 0; total = 1;
+            while i++ < rows
+                div(class="row justify-content-center mb-sm-2")
+                    - var j = 0;
+                    while j++ < columns
+                        div(class="col justify-content-center") 
+                            button(class="btn btn-outline-success btn-light btn-lg btn-block py-4 my-2" style="font-size:50pt" name="init" value= total) #{total++}
 
 
 

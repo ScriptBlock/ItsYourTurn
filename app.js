@@ -31,6 +31,7 @@ var allowPlayerJoin = false;
 
 
 function addInitItem(r, s, t) {
+	console.log("R: " + r + " S: " + s + " T: " + t);
 	if(initiative[r] == null) {
 		initiative[r] = [];
 	}
@@ -84,7 +85,7 @@ function setInit(userName, charName,segment,roundEnter) {
 
 	//if(setValid) {
 	if(!charInInit(charName)) {
-		//console.log("Add Init Item: " + roundEnter + " : " + segment);
+		console.log("Add Init Item: " + roundEnter + " : " + segment);
 		addInitItem(roundEnter, segment, {"userName": userName, "charName": charName, "turn": 1, "taken":false, "note": "Entered Initiative"});
 	}
 }
@@ -354,6 +355,7 @@ function buildPugData(req, view) {
 			let columns = 0;
 			console.log("building setinit for " + segments + " segs");
 			switch(segments) {
+				case 0:
 				case "0":
 					rows = 5; columns = 5;
 					break;
@@ -460,6 +462,16 @@ app.get("/", function(req, res) {
 			}
 		}
 	}
+})
+
+
+//--------------------- SETINITITIVE -------------------- //
+app.post("/setinitiative", function(req, res) {
+	console.log("setting initiative");
+	let initValue = req.body.init;
+	setInit(req.session.userName, req.session.charName, initValue, currentRound);
+	res.redirect("/");
+
 })
 
 
