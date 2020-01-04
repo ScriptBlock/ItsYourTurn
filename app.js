@@ -45,8 +45,8 @@ function addInitItem(r, s, t) {
 	initiative[r][s].push(t);
 }
 
-function addInitReminder(r,s, player, character, note) {
-	addInitItem(r,s, {"playerName": player, "charName": character, "note": note, "taken": false});
+function addInitReminder(r,s, userName, character, note) {
+	addInitItem(r,s, {"userName": userName, "charName": character, "note": note, "taken": false});
 	//
 }
 
@@ -89,6 +89,7 @@ function setInit(userName, charName,segment,roundEnter) {
 		addInitItem(roundEnter, segment, {"userName": userName, "charName": charName, "turn": 1, "taken":false, "note": "Entered Initiative"});
 	}
 }
+
 
 function newInit(s) {
 	segments = s;
@@ -312,17 +313,23 @@ function IPSecurityCheck(req, res, next) {
 function getDNDInitForView(r,seg) {
 	console.log("------------------------------------------------");
 	let retVal = [];
-
+	let segmentTurnTaken = false;
 	if(initiative !=  null && initiative.length > 0) {  
 		
 		//for(let i = retVal.length; i>0; i--) {
 		for(let s = initiative[r].length-1; s>=0; s--) {	
 			if(initiative[r][s]) {
 				let t = 0;
+				segmentTurnTaken = false;
 				//for(let t = initiative[r][s].length-1; t>=0;t--) {
 				for(const data of initiative[r][s]) {
 					if(s === seg) {
-						retVal.push({"segment":s, "turn":t++, "selected": true, "data": data});
+						if(!segmentTurnTaken && !data.taken) {
+							retVal.push({"segment":s, "turn":t++, "selected": true, "data": data});
+							segmentTurnTaken = true;
+						} else {
+							retVal.push({"segment":s, "turn":t++, "selected": false, "data": data});
+						}
 					} else {
 						retVal.push({"segment":s, "turn":t++, "selected": false, "data": data});
 					}
@@ -339,16 +346,17 @@ function getDNDInitForView(r,seg) {
 
 function buildPugData(req, view) {
 	let retVal = null;
+	let initView = null;
 	switch(view) {
 		case "dmmain":
 			let loggedOnUsers = players.filter(player => player.userName != "");
-			let initView = null;
+			initView = null;
 			if(initiative != null) {
-				initView = getDNDInitForView(currentRound, 5); //TODO change this to currentSegment
+				initView = getDNDInitForView(currentRound, currentSegment); 
 			}
-			console.log("built initiative view: " );
-			console.log(initView);
-			retVal = {'s': req.session, 'isDMChosen': isDMChosen, 'loggedOnUsers': loggedOnUsers, 'initiative': initView, 'started': !allowPlayerJoin };
+			//console.log("built initiative view: " );
+			//console.log(initView);
+			retVal = {'s': req.session, 'isDMChosen': isDMChosen, 'loggedOnUsers': loggedOnUsers, 'initiative': initView, 'started': !allowPlayerJoin, 'currentRound': currentRound, 'currentSegment': currentSegment };
 			break;
 		case "setinit":
 			let rows = 0; 
@@ -360,7 +368,6 @@ function buildPugData(req, view) {
 					rows = 5; columns = 5;
 					break;
 				case "8":
-					console.log("dung eating fool");
 					rows = 2; columns = 4;
 					break;
 				case "10":
@@ -372,6 +379,13 @@ function buildPugData(req, view) {
 			}
 
 			retVal = {'s': req.session, 'isDMChosen': isDMChosen, 'rows': rows, 'columns': columns };
+			break;
+		case "playermain":
+			initView = null;
+			if(initiative != null) {
+				initView = getDNDInitForView(currentRound, currentSegment); 
+			}
+			retVal = {'s': req.session, 'isDMChosen': isDMChosen, 'initiative': initView, 'currentRound': currentRound, 'currentSegment': currentSegment };
 			break;
 	}
 	console.log(retVal);
@@ -458,10 +472,28 @@ app.get("/", function(req, res) {
 				//console.log(pugData);
 				res.render('setinit', pugData);
 			} else {
-				res.render('main', {'s': req.session, 'isDMChosen': isDMChosen});
+				let playerMainData = buildPugData(req, "playermain");
+				res.render('main', playerMainData);
 			}
 		}
 	}
+});
+
+
+
+//--------------------- SETINITITIVE -------------------- //
+app.post("/startinitiative", function(req, res) {
+	console.log("starting initiative");
+	if(req.session.isDM) {
+		currentRound = 0; 
+		if(segments == 0) {
+			currentSegment = initiative[0].length-1;		
+		} else {
+			currentSegment = 0;
+		}
+		allowPlayerJoin = false;
+	}
+	res.redirect("/");
 })
 
 
@@ -469,7 +501,7 @@ app.get("/", function(req, res) {
 app.post("/setinitiative", function(req, res) {
 	console.log("setting initiative");
 	let initValue = req.body.init;
-	setInit(req.session.userName, req.session.charName, initValue, currentRound);
+	setInit(req.session.userName, req.session.charName, initValue-1, currentRound);
 	res.redirect("/");
 
 })
