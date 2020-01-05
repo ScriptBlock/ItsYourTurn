@@ -22,17 +22,16 @@ block content
           div(class="alert alert-primary m-0" role="alert") Round: #{currentRound+1} / Segment: #{currentSegment+1}
           button(class="btn btn-light ml-sm-2 border-dark" type="button" disabled="true") Next 🢂
 
-      ul.list-group
+      div.list-group
           each i in initiative
-              bg-secondary
               if i.data
                   if i.selected
                       if i.data.charName == s.charName
-                        li(class="list-group-item d-flex justify-content-between align-items-center bg-danger") #{i.segment+1}: #{i.data.charName}
-                            span(class="badge badge-primary badge-pill") #{i.data.userName}
-                      else
-                        li(class="list-group-item d-flex justify-content-between align-items-center bg-success") #{i.segment+1}: #{i.data.charName}
-                            span(class="badge badge-primary badge-pill") #{i.data.userName}
-                  else
-                      li(class="list-group-item d-flex justify-content-between align-items-center bg-secondary") #{i.segment+1}: #{i.data.charName}
+                        a(class="list-group-item list-group-item-action d-flex justify-content-between align-items-center bg-danger active" href="/finishturn") #{i.segment+1}: #{i.data.charName}
                           span(class="badge badge-primary badge-pill") #{i.data.userName}
+                      else
+                        a(class="list-group-item list-group-item-action  d-flex justify-content-between align-items-center bg-success") #{i.segment+1}: #{i.data.charName}
+                          span(class="badge badge-primary badge-pill") #{i.data.userName}
+                  else
+                      a(class="list-group-item list-group-item-action  d-flex justify-content-between align-items-center bg-secondary") #{i.segment+1}: #{i.data.charName}
+                        span(class="badge badge-primary badge-pill") #{i.data.userName}

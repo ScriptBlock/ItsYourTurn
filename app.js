@@ -171,8 +171,8 @@ function advanceSegment(r,s) {
 	}
 	console.log("advancing segment.  next segment is: " );
 	console.log(nextSegment);
-	//currentRound = nextSegment.r;
-	//currentSegment = nextSegment.s;
+	currentRound = nextSegment.r;
+	currentSegment = nextSegment.s;
 }
 
 function setTurnTaken(r,s,item) {
@@ -182,6 +182,9 @@ function setTurnTaken(r,s,item) {
 }
 
 function finishTurn(r,s,item,goAgain) {
+	console.log("finishing turn r:" + r + " s:" + s + " item:" + item);
+	console.log(item);
+
 	if(!initiative[r][s][item] != null && !initiative[r][s][item].taken) {
 		initiative[r][s][item].taken = true;
 		if(segments == 0) {
@@ -528,6 +531,26 @@ app.post("/newinitiative", function(req, res) {
 	//setInit(req.session.userName, "Charlie", 5, currentRound);
 	//setInit(req.session.userName, "David", 8, currentRound);
 	
+	res.redirect("/");
+});
+
+app.get("/finishturn", function(req, res) {
+	finishingChar = req.session.charName;
+	console.log("finishing turn for " + finishingChar);
+	
+	for(let i = 0; i<initiative[currentRound][currentSegment].length;i++) {
+		let data = initiative[currentRound][currentSegment][i];
+
+		console.log("checking [[[");
+		console.log(data);
+		console.log("]]] for finishing");
+		if(!data.taken && data.charName == finishingChar) {
+			console.log("the requesting character requests this finish.. doing so");
+			finishTurn(currentRound, currentSegment, i, true);
+		} else {
+			console.log("this items doesn't match the requesting character");
+		}
+	}
 	res.redirect("/");
 });
 
