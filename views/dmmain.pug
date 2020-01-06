@@ -19,10 +19,11 @@ block content
 
 
     main(class="container px-0" role="main")
-        div(class="row justify-content-center mb-sm-2 p-2 bg-secondary")
-            button(class="btn btn-light mr-sm-2 border-dark" type="button") 🢀 Rewind
-            div(class="alert alert-primary m-0" role="alert") Round: #{currentRound+1} / Segment: #{currentSegment+1}
-            button(class="btn btn-light ml-sm-2 border-dark" type="button") Next 🢂
+        form(action="/moveinitiative" method="POST")
+            div(class="row justify-content-center mb-sm-2 p-2 bg-secondary")
+                button(class="btn btn-light mr-sm-2 border-dark" type="button" name="direction" value="backward") 🢀 Rewind
+                div(class="alert alert-primary m-0" role="alert") Round: #{currentRound+1} / Segment: #{currentSegment+1}
+                button(class="btn btn-light ml-sm-2 border-dark" type="button" name="direction" value="forward") Next 🢂
         div(class="row")
             div(class="col-sm")
                 h2(class="text-center") Initiative
@@ -33,35 +34,22 @@ block content
                         button(class="btn btn-outline-success btn-block" name="mode" value="clock8") 8 Round Clock Style
                         button(class="btn btn-outline-success btn-block" name="mode" value="clock10") 10 Round Clock Style
                         button(class="btn btn-outline-success btn-block" name="mode" value="clock12") 12 Round Clock Style
-                else if started         
-                    ul.list-group
+                else 
+                    if !started         
+                        form(action="/startinitiative", method="POST")
+                            button(class="btn btn-outline-success btn-block" value="start") Start Initiative
+
+                    div.list-group
                         each i in initiative
-                            bg-secondary
                             if i.data
                                 if i.selected
-                                    li(class="list-group-item d-flex justify-content-between align-items-center bg-success") #{i.segment+1}: #{i.data.charName}
+                                    a(class="list-group-item list-group-item-action d-flex justify-content-between align-items-center bg-success" href="/finishturn") #{i.segment+1}: #{i.data.charName}
                                         span(class="badge badge-primary badge-pill") #{i.data.userName}
                                 else
-                                    li(class="list-group-item d-flex justify-content-between align-items-center bg-secondary") #{i.segment+1}: #{i.data.charName}
-                                        span(class="badge badge-primary badge-pill") #{i.data.userName}
-                                
-                            else
-                                li(class="list-group-item d-flex justify-content-between align-items-center bg-secondary") #{i.segment+1}: Empty
-                else
-                    form(action="/startinitiative", method="POST")
-                        button(class="btn btn-outline-success btn-block" value="start") Start Initiative
-                    ul.list-group
-                        each i in initiative
-                            bg-secondary
-                            if i.data
-                                if i.selected
-                                    li(class="list-group-item d-flex justify-content-between align-items-center bg-success") #{i.segment+1}: #{i.data.charName}
-                                        span(class="badge badge-primary badge-pill") #{i.data.userName}
-                                else
-                                    li(class="list-group-item d-flex justify-content-between align-items-center bg-secondary") #{i.segment+1}: #{i.data.charName}
+                                    a(class="list-group-item list-group-item-action d-flex justify-content-between align-items-center bg-secondary") #{i.segment+1}: #{i.data.charName}
                                         span(class="badge badge-primary badge-pill") #{i.data.userName}                                
                             else
-                                li(class="list-group-item d-flex justify-content-between align-items-center bg-secondary") #{i.segment+1}: Empty
+                                a(class="list-group-item list-group-action-item d-flex justify-content-between align-items-center bg-secondary") #{i.segment+1}: Empty
 
 
             div(class="col-sm justify-content-center") 

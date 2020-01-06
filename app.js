@@ -118,10 +118,17 @@ function printInit() {
 
 
 function actionsRemaining(r,s) {
+	console.log("checking actions remaining for round:" + r + " segment:" + s);
 	var retVal = 0;
+	let counter = 0;
 	for(const item of initiative[r][s]) {
+		console.log("checking item " + (counter++) + " of segment");
+		console.log(item);
 		if(!item.taken) {
+			console.log("item turn is not taken, adding +1 to actions remaining");
 			retVal++;
+		} else {
+			console.log("item is taken, not adding");
 		}
 	}
 	return retVal;
@@ -411,14 +418,15 @@ app.route('/')
 */
 
 //--------------------- CATCHALL ------------------- //
+/*
 app.use(function(req, res, next) {
 	console.log("anther catchall with no route");
 	next();
 })
-
+*/
 //--------------------- MAIN ------------------- //
 app.all('/', function(req, res, next) {
-	console.log("User request from IP: " + req.ip);
+	console.log("app.all - User request from IP: " + req.ip);
 
 	if(!isIPInSystem(req.ip)) {	
 		console.log("IP is not in the system, adding and redirecting to edituser");
@@ -445,7 +453,7 @@ app.all('/', function(req, res, next) {
 
 
 app.get("/", function(req, res) {
-
+	console.log("app.get /" );
 	if(req.session.isDM) {
 		console.log("rendering dmmain");
 		//let loggedOnUsers = players.filter(player => player.userName != "");
@@ -463,11 +471,12 @@ app.get("/", function(req, res) {
 		res.render('dmmain', dmmainPugData);
 	} else {
 		if(!playerHasChar(req.session.userName)) {
+			console.log("rendering charselect");
 			let unassignedPlayers = players.filter(player => player.userName === "");
 			//res.render('charselect', {'unassignedPlayers': unassignedPlayers});
 			res.render('charselect', {'unassignedPlayers': unassignedPlayers, 's': req.session, 'isDMChosen': isDMChosen});
 		} else {
-			console.log("rendering main");
+			
 			//if(allowPlayerJoin && !charInInit(charForUsername(req.session.userName))) {
 			if(allowPlayerJoin && !charInInit(req.session.charName)) {
 				console.log("rendering setinit for " + req.session.userName);
@@ -475,6 +484,7 @@ app.get("/", function(req, res) {
 				//console.log(pugData);
 				res.render('setinit', pugData);
 			} else {
+				console.log("rendering playermain");
 				let playerMainData = buildPugData(req, "playermain");
 				res.render('main', playerMainData);
 			}
@@ -534,19 +544,51 @@ app.post("/newinitiative", function(req, res) {
 	res.redirect("/");
 });
 
+//--------------------- MOVEINITIATIVE ------------------- //
+app.get("/moveinitiative", function(req, res) {
+	if(req.session.isDM) {
+		let moveDirection = req.body.direction;
+
+		if(moveDirection) {
+			if(moveDirection == "forward") {
+				//TODO this
+
+			}
+
+		}
+
+
+
+	}
+})
+
+
+//-------------------- FINISHTURN --------------------- //
 app.get("/finishturn", function(req, res) {
 	finishingChar = req.session.charName;
-	console.log("finishing turn for " + finishingChar);
+	console.log(req.session.charName + " (" + req.session.userName + ") finishing turn");
 	
-	for(let i = 0; i<initiative[currentRound][currentSegment].length;i++) {
-		let data = initiative[currentRound][currentSegment][i];
+	//TODO can i do a init[cr][cs].first(first => !first.taken) ???
+	//let notTaken = initiative[currentRound][currentSegment].filter(action => !action.taken)
+	let itemToFinish = -1
+	let data = null;
+	for(let i = 0; i<initiative[currentRound][currentSegment].length && itemToFinish < 0;i++) {
+		data = initiative[currentRound][currentSegment][i];
+		if(!data.taken) {
+			itemToFinish = i;
+		}
+	}
 
-		console.log("checking [[[");
-		console.log(data);
-		console.log("]]] for finishing");
-		if(!data.taken && data.charName == finishingChar) {
-			console.log("the requesting character requests this finish.. doing so");
-			finishTurn(currentRound, currentSegment, i, true);
+	//console.log("checking [[[");
+	//console.log(data);
+	//console.log("]]] for finishing");
+	if(!data.taken && data.charName == finishingChar) {
+		console.log("the requesting character requests this finish.. doing so");
+		finishTurn(currentRound, currentSegment, itemToFinish, true);
+	} else {
+		if(req.session.isDM) {
+			console.log("DM requested turn finish for current init spot, doing so");
+			finishTurn(currentRound, currentSegment, itemToFinish, true);
 		} else {
 			console.log("this items doesn't match the requesting character");
 		}
@@ -568,7 +610,17 @@ app.post("/addtoinit", function(req, res) {
 			if(segments === 0) { //D&D rounds
 				setInit(req.session.userName, charName, 0, currentRound);
 			} else {  // clock rounds
+				//TODO this is probably broken.  segments - 1 is not reliable because of round boundaries.  it should really be the maxsegment for the current round i think
 				setInit(req.session.userName, charName, segments-1, currentRound);
+			}
+		}
+
+		if(addLocation === "topofnextround") {
+			if(segments === 0) { //D&D rounds
+				console.log("adding " + charName + " to segment " + initiative[currentRound].length + " of round " + (currentRound + 1));
+				setInit(req.session.userName, charName, initiative[currentRound].length, currentRound + 1);
+			} else {  //clock rounds
+				//TODO implement this.
 			}
 		}
 	}
